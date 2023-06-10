@@ -1,7 +1,7 @@
 # Router
 
-This is a simple routing library for use with the
-[Ring](https://github.com/ring-clojure/ring) framework.
+This is a simple routing library for use with the [Ring](https://github.com/ring-clojure/ring)
+framework – no macros, no magic, just plain Clojure datastructures.
 
 ## Usage
 
@@ -23,6 +23,21 @@ This is a simple routing library for use with the
 
 (run-jetty (compile-router app-routes)
            {:port 3000, :join? false})
+```
+
+### Route Parameters
+
+```clojure
+;; Define a request handler that uses the route parameter :id
+(defn get-item [request]
+  (let [id (get-in request [:params :id])]
+    (println "The id is " id)))
+
+;; Define a route with a route parameter, using the usual notation
+(def dispatch (compile-router ["/items/{id}" :get get-item])
+
+(dispatch {:uri "/items/123", :request-method :get})
+;;=> The id is 123
 ```
 
 

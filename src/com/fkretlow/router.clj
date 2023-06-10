@@ -131,8 +131,8 @@
       (error-no-matching-route! request))))
 
 (defn compile-router
-  "Given any number of `route-trees`, compile a dispatch function that dispatches
-  a ring request to the appropriate handler function.
+  "Given any number of `route-trees`, compile a dispatch function that forwards a Ring
+  request to the appropriate handler function.
 
   Route trees are (potentially nested) vectors with the following grammar:
 
@@ -142,8 +142,9 @@
     `method`: one of `:get :post :put :delete :options`
     `handler`: the handler function for requests to this endpoint
 
-  For example, with the following route tree, GET requests to `\"/items/123\"` will be
-  handled by the function `get-item`:
+  For example, with the following route tree, request maps with the `:uri` `\"/items/123\"`
+  will be forwarded to the function `get-item`, and the forwarded request map will contain 
+  the route parameter `:id` both in the `:params` and in the `:route-params` fields:
 
     ```
     [\"/\" :get get-root,
@@ -158,5 +159,6 @@
   is found, so you'll want to wrap it with some error catching middleware."
   [& route-trees]
   {:pre [(s/valid? (s/coll-of ::route-tree) route-trees)]}
+
   (let [tree (reduce insert-route-tree {} route-trees)]
     (partial dispatch-request tree)))
