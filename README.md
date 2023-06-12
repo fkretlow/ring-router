@@ -1,4 +1,4 @@
-# Router
+# Ring Router
 
 This is a simple routing library for use with the [Ring](https://github.com/ring-clojure/ring)
 framework – no macros, no magic, just plain Clojure datastructures.
@@ -7,7 +7,7 @@ framework – no macros, no magic, just plain Clojure datastructures.
 
 ```clojure
 (ns com.example.app
-  (:require [com.fkretlow.router :refer [compile-router]]
+  (:require [com.fkretlow.ring-router :refer [compile-router]]
             [ring.adapter.jetty :refer [run-jetty]])
 
 ;; Assuming you have request handlers get-root, get-items etc. defined

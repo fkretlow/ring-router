@@ -1,4 +1,4 @@
-(defproject com.fkretlow/router "0.1.0"
+(defproject com.fkretlow/ring-router "0.1.0"
   :description "request routing library for use with the Ring framework"
   :url "https://github.com/fkretlow/router"
   :license {:name "The MIT License"

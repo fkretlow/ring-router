@@ -1,4 +1,4 @@
-(ns com.fkretlow.router
+(ns com.fkretlow.ring-router
   (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]))
