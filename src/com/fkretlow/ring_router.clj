@@ -75,35 +75,30 @@
 
   (when (seq route-tree)
     (let [path (split-uri uri-prefix)]
-      (loop [parts parts
-             routes []]
+      (loop [routes []
+             parts parts]
         (cond
-        ;; :get fn ...
+          ;; :get fn ...
           (contains? http-methods (first parts))
           (let [[method handler & more] parts]
             (recur
-             more
-             (conj routes {::path path, ::method method, ::handler handler})))
+             (conj routes {::path path, ::method method, ::handler handler})
+             more))
 
-        ;; ["/abc" ...] ...
+          ;; ["/abc" ...] ...
           (sequential? (first parts))
           (recur
-           (next parts)
            (concat routes
                    (map
                     (fn [route] (update route ::path #(concat path %)))
-                    (route-tree->routes (first parts)))))
+                    (route-tree->routes (first parts))))
+           (next parts))
 
           (nil? parts)
           routes)))))
 
 (defn- insert-route-tree [node route-tree]
-  {:pre [(s/valid? ::node node)
-         (s/valid? ::route-tree route-tree)]
-   :post [(s/valid? ::node node)]}
-
-  (let [routes (route-tree->routes route-tree)]
-    (reduce (fn [router route] (insert-route router route)) node routes)))
+  (reduce insert-route node (route-tree->routes route-tree)))
 
 (defn- error-no-matching-route! [request]
   (throw (ex-info "no matching route" request)))
@@ -139,7 +134,7 @@
     `route-tree`: `[path-segment (method-handler-pair|route-tree)+]`
     `path-segment`: an URI segment like `\"/\"` or `\"/items/{id}\"`
     `method-handler-pair`: `method handler`
-    `method`: one of `:get :post :put :delete :options`
+    `method`: `:get|:post|:put|:delete|:options`
     `handler`: the handler function for requests to this endpoint
 
   For example, with the following route tree, request maps with the `:uri` `\"/items/123\"`
@@ -158,7 +153,7 @@
   `\"no matching route\"` and the given `request` as its `:data` when no matching route
   is found, so you'll want to wrap it with some error catching middleware."
   [& route-trees]
-  {:pre [(s/valid? (s/coll-of ::route-tree) route-trees)]}
+  {:pre [(coll? route-trees)]} ;; thorough validation is done later
 
-  (let [tree (reduce insert-route-tree {} route-trees)]
-    (partial dispatch-request tree)))
+  (let [node (reduce insert-route-tree {} route-trees)]
+    (partial dispatch-request node)))

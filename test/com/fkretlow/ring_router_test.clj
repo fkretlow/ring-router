@@ -1,7 +1,7 @@
 (ns com.fkretlow.ring-router-test
   (:require
    [clojure.test :refer [deftest is testing]]
-   [com.fkretlow.router :as router :refer [compile-router]]))
+   [com.fkretlow.ring-router :refer [compile-router]]))
 
 (defn- GET [uri] {:uri uri, :request-method :get})
 (defn- POST [uri] {:uri uri, :request-method :post})
@@ -49,7 +49,7 @@
       (is (= {:params {:group-id "123", :member-id "456"},
               :handler-id "GET /groups/{group-id}/members/{member-id}"}
              (dispatch (GET "/groups/123/members/456")))))
-    
+
     (testing "throws when no matching route exists"
       (is (thrown? clojure.lang.ExceptionInfo (dispatch (GET "/banana")))))))
 
