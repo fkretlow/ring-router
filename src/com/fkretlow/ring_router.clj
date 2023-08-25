@@ -97,14 +97,19 @@
           (nil? parts)
           routes)))))
 
-(defn- insert-route-tree [node route-tree]
-  (reduce insert-route node (route-tree->routes route-tree)))
+(defn insert-route-tree
+  "Given a `router` and a `route-tree`, insert the handler functions of the latter into the former."
+  [router route-tree]
+  (reduce insert-route router (route-tree->routes route-tree)))
 
 (defn- error-no-matching-route! [request]
   (throw (ex-info "no matching route" request)))
 
-(defn- dispatch-request [node {uri :uri, method :request-method, :as request}]
-  (loop [node node
+(defn dispatch-request
+  "Given a `router` and a ring `request`, dispatch the request to the appropriate
+  handler function or throw an error if no matching route exists."
+  [router {uri :uri, method :request-method, :as request}]
+  (loop [node router
          path (split-uri uri)
          params []]
     (cond
@@ -126,8 +131,8 @@
       (error-no-matching-route! request))))
 
 (defn compile-router
-  "Given any number of `route-trees`, compile a dispatch function that forwards a Ring
-  request to the appropriate handler function.
+  "Compile any number of `route-trees` to a router that `dispatch-request` can use
+  to dispatch a ring request to its appropriate handler function.
 
   Route trees are (potentially nested) vectors with the following grammar:
 
@@ -147,13 +152,5 @@
       :get get-items,
       :post post-items,
       [\"/{id}\" :get get-item]]]
-    ```
-
-  The compiled dispatch function throws a `clojure.lang.ExceptionInfo` with the message
-  `\"no matching route\"` and the given `request` as its `:data` when no matching route
-  is found, so you'll want to wrap it with some error catching middleware."
-  [& route-trees]
-  {:pre [(coll? route-trees)]} ;; thorough validation is done later
-
-  (let [node (reduce insert-route-tree {} route-trees)]
-    (partial dispatch-request node)))
+    ```"
+  [& route-trees] (reduce insert-route-tree {} route-trees))

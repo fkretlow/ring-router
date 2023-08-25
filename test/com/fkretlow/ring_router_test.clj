@@ -1,7 +1,7 @@
 (ns com.fkretlow.ring-router-test
   (:require
    [clojure.test :refer [deftest is testing]]
-   [com.fkretlow.ring-router :refer [compile-router]]))
+   [com.fkretlow.ring-router :refer [compile-router dispatch-request]]))
 
 (defn- GET [uri] {:uri uri, :request-method :get})
 (defn- POST [uri] {:uri uri, :request-method :post})
@@ -25,7 +25,7 @@
                      :get (handler-fn "GET /groups/{group-id}/members/{member-id}")]
                     ["/api/v1"
                      ["/items" :get (handler-fn "GET /api/v1/items")]]]
-        dispatch (compile-router route-tree)]
+        dispatch (partial dispatch-request (compile-router route-tree))]
 
     (testing "simple get request"
       (is (= {:handler-id "GET /items"}
@@ -55,7 +55,7 @@
 
 (deftest test-multiple-route-trees
   (let [route-trees [["/items" :post (handler-fn 1)] ["/items" :post (handler-fn 2)]]
-        dispatch (apply compile-router route-trees)]
+        dispatch (partial dispatch-request (apply compile-router route-trees))]
     (testing "later handlers overwrite previous ones for the same route"
       (is (= {:handler-id 2}
              (dispatch (POST "/items")))))))
